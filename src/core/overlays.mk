@@ -1,3 +1,5 @@
+
+# Overlays are snippets of Dockerfiles that can be parameterized and overridden
 OVERLAYS_DIR  ?= overlays
 OVERLAYS      ?=
 

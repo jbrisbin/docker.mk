@@ -1,3 +1,5 @@
+
+# Core targets for docker.mk
 TAG 				?=
 FROM 				?= ubuntu
 MAINTAINER 	?=
