@@ -20,7 +20,7 @@ $(DOCKERFILE):
 ifneq (,$(strip $(MAINTAINER)))
 	$(verbose) echo MAINTAINER "$(MAINTAINER)" >>$(DOCKERFILE)
 endif
-	$(call overlays)
+	$(foreach overlay,$(OVERLAY_FILES),$(call add_overlay,$(overlay)))
 ifneq (,$(strip $(ENTRYPOINT)))
 	$(verbose) echo ENTRYPOINT $(ENTRYPOINT) >>$(DOCKERFILE)
 endif

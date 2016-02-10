@@ -5,7 +5,7 @@ OVERLAYS      ?=
 
 OVERLAY_FILES := $(patsubst %,$(OVERLAYS_DIR)/%.Dockerfile,$(OVERLAYS))
 
-define overlays
-$(overlay_verbose) echo $(foreach overlay,$(OVERLAY_FILES),\
-	$(shell sed "s#\$CURDIR/#$(dir $(realpath $(overlay)))#" $(overlay) | sed "s#$(CURDIR)##")) >>$(DOCKERFILE)
+define add_overlay
+	$(exec OVERLAY_DIR := $(dir $(realpath $(1))))
+	$(verbose) cat $(1) | sed "s|\$CURDIR/|$(OVERLAY_DIR)|" | sed "s|$(CURDIR)||" >>$(DOCKERFILE)
 endef
