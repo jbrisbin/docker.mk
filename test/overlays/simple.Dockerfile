@@ -1,0 +1,1 @@
+ADD $CURDIR/test.sh /
