@@ -11,6 +11,6 @@ build_verbose_2 = set -x;
 build_verbose = $(build_verbose_$(V))
 
 # OVERLAY verbosity settings
-overlay_verbose_0 = @echo " OVERLAY " $(OVERLAY_FILES);
+overlay_verbose_0 = @echo " OVERLAY " $(OVERLAYS);
 overlay_verbose_2 = set -x;
 overlay_verbose = $(overlay_verbose_$(V))

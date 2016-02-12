@@ -1,2 +1,2 @@
-#!/bin/sh
-true
+#!/bin/bash
+[ "$MY_VAR" == "something" ] && true
