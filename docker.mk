@@ -42,7 +42,7 @@ push:
 	docker push $(DOCKER_PUSH_OPTS) $(TAG)
 
 test: install
-	docker run $(DOCKER_TEST_OPTS) $(TAG)
+	docker run -e TEST=true $(DOCKER_TEST_OPTS) $(TAG)
 
 $(DOCKERFILE):
 	$(foreach overlay,$(OVERLAY_FILES), $(eval $(call source_overlay,$(overlay))))
@@ -51,7 +51,7 @@ ifneq (,$(strip $(MAINTAINER)))
 	$(verbose) echo MAINTAINER "$(MAINTAINER)" >>$(DOCKERFILE)
 endif
 ifneq (,$(strip $(LABEL)))
-	$(verbose) echo LABEL $(LABEL) >$(DOCKERFILE)
+	$(verbose) echo LABEL $(LABEL) >>$(DOCKERFILE)
 endif
 	$(foreach overlay,$(OVERLAY_FILES), $(call add_overlay,$(overlay)))
 ifneq (,$(strip $(ENTRYPOINT)))
@@ -69,6 +69,5 @@ $(shell cat $(1) | grep '^#:mk' | sed 's/^#:mk\(.*\)/$$\(eval \1\)/')
 endef
 
 define add_overlay
-$(eval DOCKER_BUILD_OPTS += --build-arg=CURDIR=$(shell basename $(dir $(realpath $(1)))))
-$(overlay_verbose) cat $(1) | grep -v '^#:mk' >>$(DOCKERFILE)
+$(overlay_verbose) cat $(1) | grep -v '^#:mk' | sed 's#$$CURDIR#$(shell basename $(dir $(realpath $(1))))#' >>$(DOCKERFILE)
 endef

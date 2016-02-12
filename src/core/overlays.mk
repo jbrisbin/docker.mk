@@ -10,6 +10,5 @@ $(shell cat $(1) | grep '^#:mk' | sed 's/^#:mk\(.*\)/$$\(eval \1\)/')
 endef
 
 define add_overlay
-$(eval DOCKER_BUILD_OPTS += --build-arg=CURDIR=$(shell basename $(dir $(realpath $(1)))))
-$(overlay_verbose) cat $(1) | grep -v '^#:mk' >>$(DOCKERFILE)
+$(overlay_verbose) cat $(1) | grep -v '^#:mk' | sed 's#$$CURDIR#$(shell basename $(dir $(realpath $(1))))#' >>$(DOCKERFILE)
 endef
