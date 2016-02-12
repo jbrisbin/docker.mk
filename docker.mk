@@ -15,6 +15,20 @@ overlay_verbose_0 = @echo " OVERLAY " $(OVERLAYS);
 overlay_verbose_2 = set -x;
 overlay_verbose = $(overlay_verbose_$(V))
 
+# Overlays are snippets of Dockerfiles that can be parameterized and overridden
+OVERLAYS_DIR  ?= overlays
+OVERLAYS      ?=
+
+OVERLAY_FILES := $(patsubst %,$(OVERLAYS_DIR)/%.Dockerfile,$(OVERLAYS))
+
+define source_overlay
+$(shell [ -f "$(1)" ] && cat $(1) | grep '^#:mk' | sed 's/^#:mk\(.*\)/$$\(eval \1\)/')
+endef
+
+define add_overlay
+grep -v '^#:mk' $(1) | sed "s#\$$CURDIR/#$(dir $(realpath $(1)))#" | sed "s#$(CURDIR)/##" >>$(DOCKERFILE);
+endef
+
 # Core targets for docker.mk
 TAG 				?=
 LABEL				?=
@@ -32,19 +46,19 @@ DOCKER_PUSH_OPTS 		?=
 
 all: $(DOCKERFILE)
 
-clean:
+clean::
 	rm -f $(DOCKERFILE)
 
-install: $(DOCKERFILE)
+install:: $(DOCKERFILE)
 	docker build -t $(TAG) $(DOCKER_BUILD_OPTS) $(CURDIR)
 
-push:
+push::
 	docker push $(DOCKER_PUSH_OPTS) $(TAG)
 
-test: install
+test:: install
 	docker run -e TEST=true $(DOCKER_TEST_OPTS) $(TAG)
 
-$(DOCKERFILE):
+$(DOCKERFILE): $(OVERLAY_FILES)
 	$(foreach overlay,$(OVERLAY_FILES), $(eval $(call source_overlay,$(overlay))))
 	$(build_verbose) echo FROM $(FROM) >$(DOCKERFILE)
 ifneq (,$(strip $(MAINTAINER)))
@@ -53,21 +67,7 @@ endif
 ifneq (,$(strip $(LABEL)))
 	$(verbose) echo LABEL $(LABEL) >>$(DOCKERFILE)
 endif
-	$(foreach overlay,$(OVERLAY_FILES), $(call add_overlay,$(overlay)))
+	$(overlay_verbose) $(foreach overlay,$(OVERLAY_FILES), $(call add_overlay,$(overlay)))
 ifneq (,$(strip $(ENTRYPOINT)))
 	$(verbose) echo ENTRYPOINT $(ENTRYPOINT) >>$(DOCKERFILE)
 endif
-
-# Overlays are snippets of Dockerfiles that can be parameterized and overridden
-OVERLAYS_DIR  ?= overlays
-OVERLAYS      ?=
-
-OVERLAY_FILES := $(patsubst %,$(OVERLAYS_DIR)/%.Dockerfile,$(OVERLAYS))
-
-define source_overlay
-$(shell cat $(1) | grep '^#:mk' | sed 's/^#:mk\(.*\)/$$\(eval \1\)/')
-endef
-
-define add_overlay
-$(overlay_verbose) cat $(1) | grep -v '^#:mk' | sed 's#$$CURDIR#$(shell basename $(dir $(realpath $(1))))#' >>$(DOCKERFILE)
-endef

@@ -16,19 +16,19 @@ DOCKER_PUSH_OPTS 		?=
 
 all: $(DOCKERFILE)
 
-clean:
+clean::
 	rm -f $(DOCKERFILE)
 
-install: $(DOCKERFILE)
+install:: $(DOCKERFILE)
 	docker build -t $(TAG) $(DOCKER_BUILD_OPTS) $(CURDIR)
 
-push:
+push::
 	docker push $(DOCKER_PUSH_OPTS) $(TAG)
 
-test: install
+test:: install
 	docker run -e TEST=true $(DOCKER_TEST_OPTS) $(TAG)
 
-$(DOCKERFILE):
+$(DOCKERFILE): $(OVERLAY_FILES)
 	$(foreach overlay,$(OVERLAY_FILES), $(eval $(call source_overlay,$(overlay))))
 	$(build_verbose) echo FROM $(FROM) >$(DOCKERFILE)
 ifneq (,$(strip $(MAINTAINER)))
@@ -37,7 +37,7 @@ endif
 ifneq (,$(strip $(LABEL)))
 	$(verbose) echo LABEL $(LABEL) >>$(DOCKERFILE)
 endif
-	$(foreach overlay,$(OVERLAY_FILES), $(call add_overlay,$(overlay)))
+	$(overlay_verbose) $(foreach overlay,$(OVERLAY_FILES), $(call add_overlay,$(overlay)))
 ifneq (,$(strip $(ENTRYPOINT)))
 	$(verbose) echo ENTRYPOINT $(ENTRYPOINT) >>$(DOCKERFILE)
 endif

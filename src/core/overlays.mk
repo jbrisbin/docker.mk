@@ -6,9 +6,9 @@ OVERLAYS      ?=
 OVERLAY_FILES := $(patsubst %,$(OVERLAYS_DIR)/%.Dockerfile,$(OVERLAYS))
 
 define source_overlay
-$(shell cat $(1) | grep '^#:mk' | sed 's/^#:mk\(.*\)/$$\(eval \1\)/')
+$(shell [ -f "$(1)" ] && cat $(1) | grep '^#:mk' | sed 's/^#:mk\(.*\)/$$\(eval \1\)/')
 endef
 
 define add_overlay
-$(overlay_verbose) cat $(1) | grep -v '^#:mk' | sed 's#$$CURDIR#$(shell basename $(dir $(realpath $(1))))#' >>$(DOCKERFILE)
+grep -v '^#:mk' $(1) | sed "s#\$$CURDIR/#$(dir $(realpath $(1)))#" | sed "s#$(CURDIR)/##" >>$(DOCKERFILE);
 endef
