@@ -1,8 +1,7 @@
 
 .PHONY = all clean install push test
 
-all: $(DOCKERFILE)
-	;
+all: install
 
 clean::
 	rm -f $(DOCKERFILE)
