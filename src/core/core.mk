@@ -1,17 +1,4 @@
 
-# Core targets for docker.mk
-TAG 				?=
-LABEL				?=
-FROM 				?= ubuntu
-MAINTAINER 	?=
-ENTRYPOINT 	?=
-
-DOCKERFILE 	?= Dockerfile
-
-DOCKER_BUILD_OPTS 	?=
-DOCKER_TEST_OPTS 		?=
-DOCKER_PUSH_OPTS 		?=
-
 .PHONY = all clean install push test
 
 all: $(DOCKERFILE)

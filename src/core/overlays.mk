@@ -1,9 +1,4 @@
-
 # Overlays are snippets of Dockerfiles that can be parameterized and overridden
-OVERLAYS_DIR  ?= overlays
-OVERLAYS      ?=
-
-OVERLAY_FILES := $(patsubst %,$(OVERLAYS_DIR)/%.Dockerfile,$(OVERLAYS))
 
 define source_overlay
 $(shell [ -f "$(1)" ] && cat $(1) | grep '^#:mk' | sed 's/^#:mk\(.*\)/$$\(eval \1\)/')

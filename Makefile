@@ -11,7 +11,11 @@ all:
 		| sed 's/^DOCKER_MK_VERSION = .*/DOCKER_MK_VERSION = $(DOCKER_MK_VERSION)/' >$(DOCKER_MK)
 
 clean:
-	@ $(MAKE) -C test clean
+	$(call foreach-test,clean)
 
 test: all
-	@ $(MAKE) -C test test
+	$(call foreach-test,test)
+
+define foreach-test
+$(foreach testmk,$(wildcard test/*.mk), $(MAKE) -C test -f $(notdir $(testmk)) $(1);)
+endef
