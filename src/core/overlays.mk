@@ -1,5 +1,11 @@
 # Overlays are snippets of Dockerfiles that can be parameterized and overridden
 
+$(OVERLAYS_DIR)/docker.mk:
+	git clone https://github.com/jbrisbin/docker.mk.git $(OVERLAYS_DIR)/docker.mk
+
+$(patsubst %,$(OVERLAYS_DIR)/docker.mk/%.Dockerfile,$(BUILTIN_OVERLAYS)): $(OVERLAYS_DIR)/docker.mk
+	$(verbose) echo "Downloaded built-in overlays"
+
 define source_overlay
 $(shell [ -f "$(1)" ] && cat $(1) | grep '^#:mk' | sed 's/^#:mk\(.*\)/$$\(eval \1\)/')
 endef

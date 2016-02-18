@@ -2,9 +2,11 @@
 .PHONY = all clean install push test
 
 all: $(DOCKERFILE)
+	;
 
 clean::
 	rm -f $(DOCKERFILE)
+	rm -Rf $(OVERLAYS_DIR)/docker.mk
 
 install:: $(DOCKERFILE)
 	docker build -t $(TAG) $(DOCKER_BUILD_OPTS) $(CURDIR)

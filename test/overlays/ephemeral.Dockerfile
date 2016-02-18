@@ -1,1 +1,0 @@
-ENV FROM_A_GIST hello

@@ -1,3 +1,4 @@
+BUILTIN_OVERLAYS := overlays/build-essential overlays/java8 overlays/sbt
 # Global verbosity settings
 V ?= 0
 
@@ -40,6 +41,12 @@ TEST_CLEAN_TARGET    ?= test-clean
 TEST_FILES           := $(filter-out $(IGNORE_TESTS),$(wildcard $(TEST_DIR)/*.mk))
 # Overlays are snippets of Dockerfiles that can be parameterized and overridden
 
+$(OVERLAYS_DIR)/docker.mk:
+	git clone https://github.com/jbrisbin/docker.mk.git $(OVERLAYS_DIR)/docker.mk
+
+$(patsubst %,$(OVERLAYS_DIR)/docker.mk/%.Dockerfile,$(BUILTIN_OVERLAYS)): $(OVERLAYS_DIR)/docker.mk
+	$(verbose) echo "Downloaded built-in overlays"
+
 define source_overlay
 $(shell [ -f "$(1)" ] && cat $(1) | grep '^#:mk' | sed 's/^#:mk\(.*\)/$$\(eval \1\)/')
 endef
@@ -51,9 +58,11 @@ endef
 .PHONY = all clean install push test
 
 all: $(DOCKERFILE)
+	;
 
 clean::
 	rm -f $(DOCKERFILE)
+	rm -Rf $(OVERLAYS_DIR)/docker.mk
 
 install:: $(DOCKERFILE)
 	docker build -t $(TAG) $(DOCKER_BUILD_OPTS) $(CURDIR)
