@@ -51,7 +51,7 @@ $(patsubst %,$(OVERLAYS_DIR)/docker.mk/%.Dockerfile,$(BUILTIN_OVERLAYS)): $(OVER
 	$(verbose) echo "Downloaded built-in overlays"
 
 $(patsubst %,$(OVERLAYS_DIR)/%.Dockerfile,$(SHARED_OVERLAYS))::
-	ln $(SHARED_OVERLAYS_DIR)/$(@) $(@)
+	ln -f $(SHARED_OVERLAYS_DIR)/$(@) $(@)
 
 define source_overlay
 $(shell [ -f "$(1)" ] && cat $(1) | grep '^#:mk' | sed 's/^#:mk\(.*\)/$$\(eval \1\)/')
@@ -81,7 +81,7 @@ push::
 test:: install
 	docker run -e TEST=true $(DOCKER_TEST_OPTS) $(TAG)
 
-$(DOCKERFILE): $(OVERLAY_FILES)
+$(DOCKERFILE): $(OVERLAYS_DIR) $(OVERLAY_FILES)
 	$(foreach overlay,$(OVERLAY_FILES), $(eval $(call source_overlay,$(overlay))))
 	$(build_verbose) echo FROM $(FROM) >$(DOCKERFILE)
 ifneq (,$(strip $(MAINTAINER)))
