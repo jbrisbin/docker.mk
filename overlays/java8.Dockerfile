@@ -1,3 +1,4 @@
+# Install Java 8
 RUN \
   add-apt-repository -y ppa:andrei-pozolotin/maven3 && \
   add-apt-repository -y ppa:openjdk-r/ppa

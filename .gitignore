@@ -1,3 +1,2 @@
 .DS_Store
-test/Dockerfile
-test/overlays/ephemeral.Dockerfile
+test/*Dockerfile

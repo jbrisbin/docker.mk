@@ -8,7 +8,7 @@ clean::
 	rm -Rf $(OVERLAYS_DIR)/docker.mk
 
 install:: $(DOCKERFILE)
-	docker build -t $(TAG) $(DOCKER_BUILD_OPTS) $(CURDIR)
+	docker build -t $(TAG) $(DOCKER_BUILD_OPTS) -f $(DOCKERFILE) $(CURDIR)
 
 push::
 	docker push $(DOCKER_PUSH_OPTS) $(TAG)
@@ -16,8 +16,11 @@ push::
 test:: install
 	docker run -e TEST=true $(DOCKER_TEST_OPTS) $(TAG)
 
-$(DOCKERFILE): $(OVERLAY_FILES)
-	$(foreach overlay,$(OVERLAY_FILES), $(eval $(call source_overlay,$(overlay))))
+$(OVERLAYS_DIR):
+	$(verbose)
+
+$(DOCKERFILE): $(OVERLAYS_DIR) $(OVERLAY_FILES)
+	$(foreach overlay,$(OVERLAY_FILES), $(eval $(shell $(call source_overlay,$(overlay)))))
 	$(build_verbose) echo FROM $(FROM) >$(DOCKERFILE)
 ifneq (,$(strip $(MAINTAINER)))
 	$(verbose) echo MAINTAINER "$(MAINTAINER)" >>$(DOCKERFILE)

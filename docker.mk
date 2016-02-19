@@ -1,4 +1,4 @@
-BUILTIN_OVERLAYS := overlays/build-essential overlays/java8 overlays/sbt
+BUILTIN_OVERLAYS := overlays/build-essential overlays/java8 overlays/mesos overlays/sbt overlays/spark
 # Global verbosity settings
 V ?= 0
 
@@ -51,14 +51,14 @@ $(patsubst %,$(OVERLAYS_DIR)/docker.mk/%.Dockerfile,$(BUILTIN_OVERLAYS)): $(OVER
 	$(verbose) echo "Downloaded built-in overlays"
 
 $(patsubst %,$(OVERLAYS_DIR)/%.Dockerfile,$(SHARED_OVERLAYS))::
-	ln -f $(SHARED_OVERLAYS_DIR)/$(@) $(@)
+	rm -f $(@) && ln -s $(SHARED_OVERLAYS_DIR)/$(@) $(@)
 
 define source_overlay
-$(shell [ -f "$(1)" ] && cat $(1) | grep '^#:mk' | sed 's/^#:mk\(.*\)/$$\(eval \1\)/')
+awk '/^#:mk[ ]/ {print "$$(eval " substr($$0, 6) ")"}' $(1);
 endef
 
 define add_overlay
-grep -v '^#:mk' $(1) | sed "s#\$$CURDIR/#$(dir $(realpath $(1)))#" | sed "s#$(CURDIR)/##" >>$(DOCKERFILE);
+awk '!/^#:mk[ ]/ {print $$0}' $(1) | sed "s#\$$CURDIR/#$(dir $(realpath $(1)))#" | sed "s#$(CURDIR)/##" >>$(DOCKERFILE);
 endef
 
 clean::
@@ -73,7 +73,7 @@ clean::
 	rm -Rf $(OVERLAYS_DIR)/docker.mk
 
 install:: $(DOCKERFILE)
-	docker build -t $(TAG) $(DOCKER_BUILD_OPTS) $(CURDIR)
+	docker build -t $(TAG) $(DOCKER_BUILD_OPTS) -f $(DOCKERFILE) $(CURDIR)
 
 push::
 	docker push $(DOCKER_PUSH_OPTS) $(TAG)
@@ -85,7 +85,7 @@ $(OVERLAYS_DIR):
 	$(verbose)
 
 $(DOCKERFILE): $(OVERLAYS_DIR) $(OVERLAY_FILES)
-	$(foreach overlay,$(OVERLAY_FILES), $(eval $(call source_overlay,$(overlay))))
+	$(foreach overlay,$(OVERLAY_FILES), $(eval $(shell $(call source_overlay,$(overlay)))))
 	$(build_verbose) echo FROM $(FROM) >$(DOCKERFILE)
 ifneq (,$(strip $(MAINTAINER)))
 	$(verbose) echo MAINTAINER "$(MAINTAINER)" >>$(DOCKERFILE)
