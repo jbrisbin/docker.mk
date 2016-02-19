@@ -81,6 +81,9 @@ push::
 test:: install
 	docker run -e TEST=true $(DOCKER_TEST_OPTS) $(TAG)
 
+$(OVERLAYS_DIR):
+	$(verbose)
+
 $(DOCKERFILE): $(OVERLAYS_DIR) $(OVERLAY_FILES)
 	$(foreach overlay,$(OVERLAY_FILES), $(eval $(call source_overlay,$(overlay))))
 	$(build_verbose) echo FROM $(FROM) >$(DOCKERFILE)
