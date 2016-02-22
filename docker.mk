@@ -44,8 +44,8 @@ TEST_CLEAN_TARGET    ?= test-clean
 TEST_FILES           := $(filter-out $(IGNORE_TESTS),$(wildcard $(TEST_DIR)/*.mk))
 # Overlays are snippets of Dockerfiles that can be parameterized and overridden
 
-$(OVERLAYS_DIR)/docker.mk::
-	git clone https://github.com/jbrisbin/docker.mk.git $(OVERLAYS_DIR)/docker.mk
+$(OVERLAYS_DIR)/docker.mk:
+	[ ! -d "$(OVERLAYS_DIR)/docker.mk" ] && git clone https://github.com/jbrisbin/docker.mk.git $(OVERLAYS_DIR)/docker.mk
 
 $(patsubst %,$(OVERLAYS_DIR)/docker.mk/%.Dockerfile,$(BUILTIN_OVERLAYS)): $(OVERLAYS_DIR)/docker.mk
 	$(verbose) echo "Downloaded built-in overlays"
