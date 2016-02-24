@@ -1,4 +1,4 @@
-BUILTIN_OVERLAYS := overlays/build-essential overlays/java8 overlays/mesos overlays/sbt overlays/spark
+BUILTIN_OVERLAYS := ubuntu/build-essential ubuntu/java8 ubuntu/mesos ubuntu/sbt ubuntu/spark alpine/base alpine/java
 # Global verbosity settings
 V ?= 0
 

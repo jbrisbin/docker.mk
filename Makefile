@@ -3,7 +3,7 @@ DOCKER_MK_VERSION := 1
 DOCKER_MK := docker.mk
 
 MODULES_CONFIG := $(shell sed "s/\#.*//" $(CURDIR)/modules.config)
-BUILTIN_OVERLAYS := $(wildcard overlays/*.Dockerfile)
+BUILTIN_OVERLAYS := $(wildcard ubuntu/*.Dockerfile) $(wildcard alpine/*.Dockerfile)
 
 .PHONY := all clean
 

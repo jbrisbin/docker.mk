@@ -2,6 +2,6 @@ TAG 				:= dockermk-builder
 FROM 				:= ubuntu:trusty
 ENTRYPOINT 	:= bash
 
-OVERLAYS		:= docker.mk/overlays/build-essential
+OVERLAYS		:= docker.mk/ubuntu/build-essential
 
 include ../docker.mk
