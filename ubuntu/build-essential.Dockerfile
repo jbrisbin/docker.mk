@@ -1,7 +1,9 @@
+ENV \
+  DEBIAN_FRONTEND=noninteractive \
+  DEBCONF_NONINTERACTIVE_SEEN=true
 
-# Overlay to install packages necessary to build software
-ENV DEBIAN_FRONTEND noninteractive
-ENV DEBCONF_NONINTERACTIVE_SEEN true
-RUN apt-get update
-RUN apt-get install -q -y apt-transport-https software-properties-common build-essential git curl
-RUN apt-get dist-upgrade -y
+# Install Java 8
+RUN \
+  apt-get update && \
+  apt-get install -y git curl build-essential && \
+  apt-get dist-upgrade -y

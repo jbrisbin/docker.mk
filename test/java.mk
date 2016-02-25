@@ -4,7 +4,6 @@ ENTRYPOINT            := java -version
 
 DOCKERFILE            := java.Dockerfile
 
-SHARED_OVERLAYS_DIR   := ../..
-SHARED_OVERLAYS       := java8
+OVERLAYS              := docker.mk/ubuntu/java8
 
 include ../docker.mk

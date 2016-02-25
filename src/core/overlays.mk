@@ -14,7 +14,7 @@ awk '/^#:mk[ ]/ {print "$$(eval " substr($$0, 6) ")"}' $(1);
 endef
 
 define add_overlay
-awk '!/^#:mk[ ]/ {print $$0}' $(1) | sed "s#\$$CURDIR/#$(dir $(realpath $(1)))#" | sed "s#$(CURDIR)/##" >>$(DOCKERFILE);
+awk '!/^#:mk[ ]/ {print $$0}' $(1) | sed "s#\$$CURDIR/#$(dir $(realpath $(1)))#g" | sed "s#$(CURDIR)/##g" >>$(DOCKERFILE);
 endef
 
 clean::
