@@ -6,9 +6,6 @@ $(OVERLAYS_DIR)/docker.mk:
 $(patsubst %,$(OVERLAYS_DIR)/docker.mk/%.Dockerfile,$(BUILTIN_OVERLAYS)): $(OVERLAYS_DIR)/docker.mk
 	$(verbose) echo "Downloaded built-in overlays"
 
-$(patsubst %,$(OVERLAYS_DIR)/%.Dockerfile,$(SHARED_OVERLAYS))::
-	rm -f $(@) && ln -s $(SHARED_OVERLAYS_DIR)/$(@) $(@)
-
 define source_overlay
 awk '/^#:mk[ ]/ {print "$$(eval " substr($$0, 6) ")"}' $(1);
 endef
@@ -16,6 +13,3 @@ endef
 define add_overlay
 awk '!/^#:mk[ ]/ {print $$0}' $(1) | sed "s#\$$CURDIR/#$(dir $(realpath $(1)))#g" | sed "s#$(CURDIR)/##g" >>$(DOCKERFILE);
 endef
-
-clean::
-	$(foreach shovr,$(SHARED_OVERLAYS), rm -f $(OVERLAYS_DIR)/$(shovr).Dockerfile;)
