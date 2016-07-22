@@ -1,65 +1,23 @@
-# docker.mk
+# Simple overlay-based Dockerfile Generation
 
-`docker.mk` is a make-based helper for composing a Dockerfile from "overlays", which are just portions of a Dockerfile that have been parameterized and are reusable. Overlays can be published on GitHub, in a Gist, or as plain-text on an HTTP-accessible server and downloaded at build time to eliminate the fragility of keeping many copies of Dockerfiles around.
+`docker.mk` is a helper for GNU `make` that simplifies the process of creating Docker images from a core set of template fragments. It lets you mix and match bits of a `Dockerfile` in different ways in order to not repeat yourself by cut-and-paste sharing of entire Dockerfiles. The core utility of `docker.mk` is `dockermk`, a small utility written in [Go](https://golang.org/) that finds the appropriate parts of the `Dockerfile` being generated based on parameters passed in and runs the entire mess though [Go's `template` library](https://golang.org/pkg/text/template/). You can define reusable template fragments in one overlay and repeat them in another.
 
 ### Installation
 
-`docker.mk` is intended to be used from your own build and included into your own `Makefile`. If you don't want to keep a copy of it in your build but download it from GitHub as needed, then just add a simple target to your `Makefile`:
-
-```make
-docker.mk:
-  @wget https://raw.githubusercontent.com/jbrisbin/docker.mk/master/docker.mk
-
--include docker.mk
-```
-
-### Configuration
-
-Before including `docker.mk`, set up the configuration variables to influence how the `Dockerfile` gets built. The following variables are available:
-
-* `TAG` (default: none) - The value passed to the `-t` flag when buiding the Docker image. Should reflect the full tag value, including user or repository and version. e.g. `jbrisbin/apache-zeppelin:0.5.6`
-* `LABEL` (default: none) - Pairs of `label=value` which will be added to the docker image build.
-* `FROM` (default: ubuntu) - Image used as the base. Will be inserted into the Dockerfile's `FROM` line.
-* `MAINTAINER` (default: none) - Optional value of the `MAINTAINER` line in the Dockerfile. If not set, no `MAINTAINER` line will be added.
-* `ENTRYPOINT` (default: none) - Optional value of the `ENTRYPOINT` line in the Dockerfile. If not set, no `ENTRYPOINT` line will be added.
-* `OVERLAYS` (default: none) - Space-separated list of overlays to compose into the Dockerfile.
-* `DOCKER_BUILD_OPTS` (default: none) - Additional options to pass to the `docker build` command.
-
-There are additional variables that govern the building of a Dockerfile. These should only be changed if you know what you are doing.
-
-* `DOCKERFILE` (default: Dockerfile) - Name of the file created and used to build the Docker image.
-* `DOCKER_TEST_OPTS` (default: none) - Additional options to pass to the `docker run` command which runs the image defined in the `test/Makefile` file.
-* `OVERLAYS_DIR` (default: overlays) - Subdirectory from which the overlays will be composed.
-
-### Building the Image
-
-A minimal `Makefile` to build a `Dockerfile` using `docker.mk` would need just a couple lines:
-
-```make
-TAG := dockerhubuser/docker-image-name:version
-FROM := ubuntu:trusty
-ENTRYPOINT := bash
-
-docker.mk:
-  @wget https://raw.githubusercontent.com/jbrisbin/docker.mk/master/docker.mk
-
--include docker.mk
-```
-
-To build the image, just run the `install` target:
+To install `docker.mk` and start using it to build your own Docker containers, just download the Makefile from GitHub. You can do this with curl:
 
 ```
-$ make install
+$ curl -sL -O https://raw.githubusercontent.com/jbrisbin/docker.mk/master/docker.mk
 ```
 
-### Using Overlays
-
-The real purpose of `docker.mk` is to help you break up the reusable portions of your Dockerfile into manageable chunks that can be source controlled and published outside the context of your Dockerfile. For example, if you wanted to install a particular software package in a certain way, using certain flags, you would create an overlay to encapsulate those build commands and publish just that portion of the Dockerfile as an overlay.
-
-It's easy to include overlays directly inside your repository. To use an overlay included in your build, just add an entry to your `OVERLAYS` variable.
+You can start creating Docker containers very easily by specifying a minimal amount of metadata. Create a `Makefile` and add the following, altered to suit your needs (only `TAG` is really required as the others are omitted if left blank or are sensibly defaulted):
 
 ```
-OVERLAYS := java8
+TAG = myuser/my-awesome-container
+FROM = ubuntu
+MAINTAINER = John Doe <john.doe@gmail.com>
+
+include ./docker.mk
 ```
 
-This would compose into the Dockerfile the contents of `overlays/java8.Dockerfile`.
+When you run `make`, `docker.mk` will invoke the generation utility with the appropriate flags based on the values specified in the `Makefile` and including sensible defaults for optional settings. Since we've included no `OVERLAYS`, this Docker container doesn't do anything interesting. It's now runnable via `docker run --rm myuser/my-awesome-container`.
