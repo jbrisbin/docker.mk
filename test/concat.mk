@@ -15,6 +15,6 @@ test-concat: clean install
 	GREETING=`docker run -i $(TAG) cat /etc/config`; \
 	[ "hello world!" == "$$GREETING" ]
 
-test-envvar: clean install
+test-envvar: 
 	GREETING=`docker run -i $(TAG) cat /etc/greeting`; \
 	[ "hello world" == "$$GREETING" ]

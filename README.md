@@ -54,8 +54,6 @@ Overlays can be reused a number of different ways. Likely the most useful will b
 
 #### Parameterizing Docker builds
 
-An easy way to make using `docker.mk` pay off is to template the installation of packages so that a standard set of base packages are installed and then any additional packages can be added by setting an environment variable.
-
 To create a `build-essential` image that can be used to build software, you might create a set of overlays like the following:
 
 ```
@@ -96,3 +94,20 @@ FROM=centos make install
 _Note: the line that includes `FROM=alpine` is technically not necessary since `alpine` is the default `FROM` value._
 
 After running `make install`, we'll have an image we can run named `ci-build-essential`. We can then build our source code by doing a `docker run -v $(pwd):/usr/src` and building our project in the `/usr/src` directory.
+
+### Using Go Templates in overlays
+
+`docker.mk` accumulates all the overlays defined in the `Makefile` and creates a single template that corresponds to the `Dockerfile` being output. Besides plain text, each overlay file can contain [Go template code](https://golang.org/pkg/text/template/). The full functionality of Go templates are supported. It's possible to include an overlay that has no text inside it but only template definitions that can be used later.
+
+As an example of using a Go template in an overlay, we can add a bit of Go template to the end of the package install to also install any packages defined in a `PKGS` environment variable.
+
+```
+RUN apt-get update
+RUN apt-get install -y python3-dev build-essential python3-pip {{index .Env "PKGS"}}
+```
+
+If you wanted to install `nano` into this image in order to edit files, you could add that to the `PKGS` environment variable and then run `make`:
+
+```
+PKGS=nano make install
+```

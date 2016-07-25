@@ -12,6 +12,7 @@ import (
 	"path/filepath"
 	"bytes"
 	"io/ioutil"
+	"net/http"
 )
 
 var (
@@ -62,6 +63,33 @@ func main() {
 
 	var tmplVars = make(map[string]interface{})
 
+	tmplFuncs := template.FuncMap{
+		"get": func(url string, idxs... int) string {
+			resp, err := http.Get(url)
+			if nil != err {
+				log.Fatal(err)
+			}
+			defer resp.Body.Close()
+			body, err := ioutil.ReadAll(resp.Body)
+			if nil != err {
+				log.Fatal(err)
+			}
+
+			lines := strings.Split(string(body), "\n")
+			var linesStart int = 0
+			var linesEnd int = 0
+			if len(idxs) > 0 {
+				linesStart = idxs[0]
+			}
+			if len(idxs) > 1 {
+				linesEnd = idxs[1]
+			} else {
+				linesEnd = len(lines)
+			}
+			return strings.Join(lines[linesStart:linesEnd], "\n")
+		},
+	}
+
 	// Transfer ENV vars to template variables
 	var envVars = make(map[string]string)
 	for _, envvar := range os.Environ() {
@@ -78,7 +106,7 @@ func main() {
 	}
 
 	// Generate Dockerfile
-	var tmpl = template.New("dockerfile")
+	var tmpl = template.New("dockerfile").Funcs(tmplFuncs)
 	var buf bytes.Buffer
 	for _, ovl := range flag.Args() {
 		o, err := overlays.FindOverlay(*workdir, overlaySearchDirs, ovl)
