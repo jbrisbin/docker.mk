@@ -60,7 +60,15 @@ func main() {
 		out = df
 	}
 
-	var tmplVars = make(map[string]string)
+	var tmplVars = make(map[string]interface{})
+
+	// Transfer ENV vars to template variables
+	var envVars = make(map[string]string)
+	for _, envvar := range os.Environ() {
+		pair := strings.Split(envvar, "=")
+		envVars[pair[0]] = pair[1]
+	}
+	tmplVars["Env"] = envVars
 
 	// Always write FROM
 	fmt.Fprintf(out, "FROM %s\n", *fromStr)
@@ -95,7 +103,10 @@ func main() {
 	}
 	// Execute template
 	tmpl.Parse(buf.String())
-	tmpl.ExecuteTemplate(out, "dockerfile", tmplVars)
+	err := tmpl.Execute(out, tmplVars)
+	if nil != err {
+		log.Fatal(err)
+	}
 
 	// Create CMD line, if set
 	if len(*cmdStr) > 0 {

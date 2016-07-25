@@ -19,6 +19,7 @@ DOCKER_TEST_OPTS     ?=
 OVERLAY_DIRS 				 ?= . overlays
 OVERLAYS             ?=
 
+# Options to add standard lines to the Dockerfile
 DOCKERMK_OPTS 			 ?=
 ifdef MAINTAINER
 DOCKERMK_OPTS 			 += -maintainer '$(MAINTAINER)'
@@ -30,7 +31,8 @@ ifdef CMD
 DOCKERMK_OPTS 			 += -cmd '$(CMD)'
 endif
 
-TESTS 								= $(shell ls test/*.mk)
+# Test harness
+TESTS 								= $(shell ls test/*.mk 2>/dev/null)
 
 .PHONY = all install distclean clean testclean test
 
