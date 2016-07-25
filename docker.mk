@@ -1,41 +1,66 @@
-DOCKERMK 						 ?= $(dir $(realpath $(lastword $(MAKEFILE_LIST))))dockermk
+WORKDIR 							= $(dir $(realpath $(lastword $(MAKEFILE_LIST))))
+DOCKERMK 						 ?= $(WORKDIR)dockermk
 
 # Core options for docker.mk
-TAG                  ?= $(notdir $(realpath $(lastword $(MAKEFILE_LIST))))
+TAG                  ?= $(shell basename $(WORKDIR))
 FROM                 ?= alpine
 MAINTAINER           ?=
 ENTRYPOINT           ?=
 CMD				           ?=
 
+# Options to influence Docker
 DOCKERFILE           ?= Dockerfile
 DOCKER_BUILD_OPTS    ?=
 DOCKER_RUN_OPTS      ?= --rm -it
 DOCKER_PUSH_OPTS     ?=
 DOCKER_TEST_OPTS     ?=
 
+# Default overlay search dirs
 OVERLAY_DIRS 				 ?= . overlays
 OVERLAYS             ?=
 
 DOCKERMK_OPTS 			 ?=
-ifneq ($(MAINTAINER),)
-DOCKERMK_OPTS += -maintainer $(MAINTAINER)
+ifdef MAINTAINER
+DOCKERMK_OPTS 			 += -maintainer '$(MAINTAINER)'
 endif
-ifneq ($(ENTRYPOINT),)
-DOCKERMK_OPTS += -entrypoint $(ENTRYPOINT)
+ifdef ENTRYPOINT
+DOCKERMK_OPTS 			 += -entrypoint '$(ENTRYPOINT)'
 endif
-ifneq ($(CMD),)
-DOCKERMK_OPTS += -cmd $(CMD)
+ifdef CMD
+DOCKERMK_OPTS 			 += -cmd '$(CMD)'
 endif
 
-.PHONY = all install clean test $(DOCKERFILE)
+TESTS 								= $(shell ls test/*.mk)
+
+.PHONY = all install distclean clean testclean test
 
 all:: install
 
 install:: $(DOCKERFILE)
 	docker build -t $(TAG) -f $(DOCKERFILE) $(DOCKER_BUILD_OPTS) .
 
+distclean:: clean
+	@CONTAINERS=`docker ps -aqf ancestor=$(TAG) | tr '\n' ' '`; \
+	if [ -n "$$CONTAINERS" ]; then \
+		echo "CLEAN $$CONTAINERS"; \
+		docker rm -f $$CONTAINERS >/dev/null; \
+	fi
+	docker rmi $(TAG)
+
 clean::
 	rm -f $(DOCKERFILE)
+
+testclean::
+	@for t in "$(TESTS)"; do \
+		$(MAKE) -C test -f `basename $$t` distclean; \
+	done
+
+test::
+	@for t in "$(TESTS)"; do \
+		TEST_TARGETS=`egrep -o 'test-.*:' $$t | tr '\n' ' ' | tr -d :`; \
+		echo "TEST $$t: $$TEST_TARGETS"; \
+		$(MAKE) -C test -f `basename $$t` $$TEST_TARGETS; \
+	done
 
 $(DOCKERFILE):: $(DOCKERMK)
 	$(DOCKERMK) \
@@ -47,5 +72,6 @@ $(DOCKERFILE):: $(DOCKERMK)
 	$(OVERLAYS)
 
 $(DOCKERMK):
-	@curl -sL -o $(DOCKERMK) https://raw.githubusercontent.com/jbrisbin/docker.mk/master/dockermk
+	@echo "Downloading dockermk utility from GitHub..."
+	curl -sL -o $(DOCKERMK) https://raw.githubusercontent.com/jbrisbin/docker.mk/master/dockermk
 	@chmod a+x $(DOCKERMK)
