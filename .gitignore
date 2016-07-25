@@ -2,4 +2,6 @@
 test/Dockerfile
 *.iml
 .idea
-
+dockermk
+dockermk-Darwin
+dockermk-Linux
