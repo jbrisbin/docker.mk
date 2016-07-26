@@ -18,7 +18,7 @@ DOCKER_TEST_OPTS     ?=
 # Default overlay search dirs
 OVERLAY_DIRS 				 ?= . overlays
 OVERLAYS             ?=
-OVERLAY_FILES 				= $(shell $(DOCKERMK) -o -w $(realpath .) -d $(shell echo $(OVERLAY_DIRS) | tr ' ' :) $(OVERLAYS))
+OVERLAY_FILES 				= $(shell [ -x $(DOCKERMK) ] && $(DOCKERMK) -o -w $(realpath .) -d $(shell echo $(OVERLAY_DIRS) | tr ' ' :) $(OVERLAYS))
 
 # Options to add standard lines to the Dockerfile
 DOCKERMK_OPTS 			 ?=
