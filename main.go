@@ -30,6 +30,7 @@ func main() {
 	// Setup flags
 	dockerfileName := flag.String("f", "", "Name of the Dockerfile to create")
 	workdir := flag.String("w", ".", "Work directory")
+	outputOverlays := flag.Bool("o", false, "Output just the names of overlay files for use as a Makefile target dependency")
 
 	// Dockerfile directives
 	fromStr := flag.String("from", "ubuntu", "Value to use in the FROM line")
@@ -98,22 +99,19 @@ func main() {
 	}
 	tmplVars["Env"] = envVars
 
-	// Always write FROM
-	fmt.Fprintf(out, "FROM %s\n", *fromStr)
-	if len(*maintainerStr) > 0 {
-		// Create MAINTAINER line, if set
-		fmt.Fprintf(out, "MAINTAINER %s\n\n", *maintainerStr)
-	}
-
 	// Generate Dockerfile
 	var tmpl = template.New("dockerfile").Funcs(tmplFuncs)
 	var buf bytes.Buffer
+	var overlayDeps []string
 	for _, ovl := range flag.Args() {
 		o, err := overlays.FindOverlay(*workdir, overlaySearchDirs, ovl)
 		if nil != err {
 			log.Fatal(err)
 		}
 		relpath, err := filepath.Rel(*workdir, o)
+		if *outputOverlays {
+			overlayDeps = append(overlayDeps, relpath)
+		}
 		if nil != err {
 			log.Fatal(err)
 		}
@@ -129,6 +127,18 @@ func main() {
 		}
 		buf.Write(bytes)
 	}
+	if *outputOverlays {
+		os.Stdout.WriteString(strings.Join(overlayDeps, " "))
+		os.Exit(0)
+	}
+
+	// Write FROM line
+	fmt.Fprintf(out, "FROM %s\n", *fromStr)
+	if len(*maintainerStr) > 0 {
+		// Create MAINTAINER line, if set
+		fmt.Fprintf(out, "MAINTAINER %s\n\n", *maintainerStr)
+	}
+
 	// Execute template
 	tmpl.Parse(buf.String())
 	err := tmpl.Execute(out, tmplVars)
@@ -144,4 +154,5 @@ func main() {
 	if len(*entryStr) > 0 {
 		fmt.Fprintf(out, "ENTRYPOINT %s\n", *entryStr)
 	}
+
 }

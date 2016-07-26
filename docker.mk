@@ -18,6 +18,7 @@ DOCKER_TEST_OPTS     ?=
 # Default overlay search dirs
 OVERLAY_DIRS 				 ?= . overlays
 OVERLAYS             ?=
+OVERLAY_FILES 				= $(shell $(DOCKERMK) -o -w $(realpath .) -d $(shell echo $(OVERLAY_DIRS) | tr ' ' :) $(OVERLAYS))
 
 # Options to add standard lines to the Dockerfile
 DOCKERMK_OPTS 			 ?=
@@ -64,7 +65,7 @@ test::
 		$(MAKE) -C test -f `basename $$t` $$TEST_TARGETS; \
 	done
 
-$(DOCKERFILE):: $(DOCKERMK)
+$(DOCKERFILE):: $(DOCKERMK) $(OVERLAY_FILES)
 	$(DOCKERMK) \
 	-w $(realpath .) \
 	-f $(DOCKERFILE) \
@@ -75,5 +76,5 @@ $(DOCKERFILE):: $(DOCKERMK)
 
 $(DOCKERMK):
 	@echo "Downloading dockermk utility from GitHub..."
-	curl -sL -o $(DOCKERMK) https://github.com/jbrisbin/docker.mk/releases/download/0.1.0/dockermk-`uname -s`
+	curl -sL -o $(DOCKERMK) https://github.com/jbrisbin/docker.mk/releases/download/0.2.0/dockermk-`uname -s`
 	@chmod a+x $(DOCKERMK)
