@@ -76,5 +76,5 @@ $(DOCKERFILE):: $(DOCKERMK) $(OVERLAY_FILES)
 
 $(DOCKERMK):
 	@echo "Downloading dockermk utility from GitHub..."
-	curl -sL -o $(DOCKERMK) https://github.com/jbrisbin/docker.mk/releases/download/0.2.0/dockermk-`uname -s`
+	curl -sL -o $(DOCKERMK) https://github.com/jbrisbin/docker.mk/releases/download/0.3.0/dockermk-`uname -s`
 	@chmod a+x $(DOCKERMK)
