@@ -65,6 +65,23 @@ func main() {
 	var tmplVars = make(map[string]interface{})
 
 	tmplFuncs := template.FuncMap{
+		"defined": func(o interface{}) bool {
+			if nil == o {
+				return false
+			}
+			switch o.(type) {
+			case string:
+				return "" != o.(string)
+			case int:
+				return o.(int) > 0
+			case float32:
+				return o.(float32) > 0.0
+			case float64:
+				return o.(float64) > 0.0
+			default:
+				return false
+			}
+		},
 		"get": func(url string, idxs... int) string {
 			resp, err := http.Get(url)
 			if nil != err {
