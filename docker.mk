@@ -37,8 +37,6 @@ TESTS 							 ?= $(shell ls test/*.mk 2>/dev/null)
 
 .PHONY = all install distclean clean testclean test
 
-all:: install
-
 install:: $(DOCKERFILE)
 	docker build -t $(TAG) -f $(DOCKERFILE) $(DOCKER_BUILD_OPTS) .
 
@@ -76,5 +74,5 @@ $(DOCKERFILE):: $(DOCKERMK) $(OVERLAY_FILES)
 
 $(DOCKERMK):
 	@echo "Downloading dockermk utility from GitHub..."
-	curl -sL -o $(DOCKERMK) https://github.com/jbrisbin/docker.mk/releases/download/0.3.0/dockermk-`uname -s`
+	curl -sL -o $(DOCKERMK) https://github.com/jbrisbin/docker.mk/releases/download/0.4.0/dockermk-`uname -s`
 	@chmod a+x $(DOCKERMK)

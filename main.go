@@ -35,7 +35,7 @@ func main() {
 	// Dockerfile directives
 	fromStr := flag.String("from", "ubuntu", "Value to use in the FROM line")
 	maintainerStr := flag.String("maintainer", "", "Value to use in the MAINTAINER line")
-	cmdStr := flag.String("cmd", "bash", "Value to use in the CMD line")
+	cmdStr := flag.String("cmd", "", "Value to use in the CMD line")
 	entryStr := flag.String("entrypoint", "", "Value to use in the ENTRYPOINT line")
 
 	flag.Var(&overlaySearchDirs, "d", "Search directory for overlay files")
