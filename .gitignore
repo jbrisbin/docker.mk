@@ -5,3 +5,4 @@ test/Dockerfile
 dockermk
 dockermk-Darwin
 dockermk-Linux
+.dockermk
